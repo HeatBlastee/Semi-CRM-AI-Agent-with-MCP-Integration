@@ -1,0 +1,69 @@
+import axios from 'axios';
+
+import dotenv from 'dotenv';
+
+dotenv.config(); // Ensure .env is loaded if not done in entrypoint
+
+/**
+ * Base URL of the Lead Management API
+ * Example: http://localhost:3000/leads
+ */
+const API: string = process.env.LEAD_API_URL!;
+const AUTH: string = process.env.JWT!;
+
+// Runtime checks for required environment variables
+if (!API) {
+    throw new Error('Missing LEAD_API_URL in environment variables');
+}
+if (!AUTH) {
+    throw new Error('Missing JWT in environment variables');
+}
+
+/**
+ * @typedef CommandObject
+ * @property {string} command - The command name
+ * @property {any} data - The payload data
+ */
+
+/**
+ * Handles MCP commands
+ * @param {{ command: string; data: any }} commandObj
+ */
+export async function handleCommand(commandObj: { command: string; data: any }) {
+    const { command, data } = commandObj;
+
+    switch (command) {
+        case 'createLead':
+            return axios.post(API, data, authHeader());
+
+        case 'getLeads':
+            return axios.get(API, authHeader());
+
+        case 'getLeadById':
+            if (!data?.id) throw new Error('Missing lead ID for getLeadById');
+            return axios.get(`${API}/${data.id}`, authHeader());
+
+        case 'updateLead':
+            if (!data?.id) throw new Error('Missing lead ID for updateLead');
+            return axios.put(`${API}/${data.id}`, data, authHeader());
+
+        case 'deleteLead':
+            if (!data?.id) throw new Error('Missing lead ID for deleteLead');
+            return axios.delete(`${API}/${data.id}`, authHeader());
+
+        default:
+            throw new Error(`Unsupported command: ${command}`);
+    }
+}
+
+/**
+ * Constructs the authorization header
+ */
+function authHeader() {
+    return {
+        headers: {
+            Authorization: `Bearer ${AUTH}`,
+            'Content-Type': 'application/json',
+        },
+    };
+}
