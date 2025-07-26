@@ -2,21 +2,10 @@ import axios from 'axios';
 
 import dotenv from 'dotenv';
 
-dotenv.config(); // Ensure .env is loaded if not done in entrypoint
-
-/**
- * Base URL of the Lead Management API
- * Example: http://localhost:3000/leads
- */
+dotenv.config();
 const API: string = process.env.LEAD_API_URL!;
-const AUTH: string = process.env.JWT!;
-
-// Runtime checks for required environment variables
 if (!API) {
     throw new Error('Missing LEAD_API_URL in environment variables');
-}
-if (!AUTH) {
-    throw new Error('Missing JWT in environment variables');
 }
 
 /**
@@ -62,7 +51,6 @@ export async function handleCommand(commandObj: { command: string; data: any }) 
 function authHeader() {
     return {
         headers: {
-            Authorization: `Bearer ${AUTH}`,
             'Content-Type': 'application/json',
         },
     };

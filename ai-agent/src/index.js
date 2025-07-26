@@ -1,11 +1,19 @@
 // index.js
 const express = require("express");
 const dotenv = require("dotenv");
+const cors = require("cors");
 const { parseQueryToCommand } = require("./parser");
 const { sendToMCP } = require("./mcpClient");
 
 dotenv.config();
 const app = express();
+
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 app.post("/ask", async (req, res) => {
@@ -19,6 +27,7 @@ app.post("/ask", async (req, res) => {
     console.log("Parsed commandObj:", commandObj);
 
     const result = await sendToMCP(commandObj);
+    console.log(result);
     res.json(result);
   } catch (err) {
     console.error("AI Agent Error:", err.message);
