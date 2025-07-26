@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import dotenv from 'dotenv';
 import { handleCommand } from './commands/handler';
+const verifyToken = require('./middleware/verifyToken'); 
 
 dotenv.config();
 const app = express();

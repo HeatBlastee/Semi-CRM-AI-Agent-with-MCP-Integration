@@ -1,9 +1,9 @@
-// index.js
 const express = require("express");
 const dotenv = require("dotenv");
 const cors = require("cors");
 const { parseQueryToCommand } = require("./parser");
 const { sendToMCP } = require("./mcpClient");
+const verifyToken = require("./middleware/verifyToken"); // ✅ Import middleware
 
 dotenv.config();
 const app = express();
@@ -16,14 +16,14 @@ app.use(
 );
 app.use(express.json());
 
-app.post("/ask", async (req, res) => {
+app.post("/ask",  async (req, res) => {
   try {
     const { query } = req.body;
     if (!query) {
       return res.status(400).json({ error: "Query is required" });
     }
 
-    const commandObj = await parseQueryToCommand(query); // ✅ fixed missing await
+    const commandObj = await parseQueryToCommand(query);
     console.log("Parsed commandObj:", commandObj);
 
     const result = await sendToMCP(commandObj);
