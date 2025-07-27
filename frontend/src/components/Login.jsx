@@ -13,10 +13,20 @@ function Login() {
     setError("");
     try {
       const backendUri = import.meta.env.VITE_BACKEND_URI;
-      const res = await axios.post(`${backendUri}/auth/login`, {
-        email,
-        password,
-      });
+      const res = await axios.post(
+        `${backendUri}/auth/login`,
+        {
+          email,
+          password,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+          withCredentials: true, // if backend uses cookies or CORS with credentials
+        }
+      );
+
 
       localStorage.setItem("token", res.data.token);
 
