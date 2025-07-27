@@ -1,13 +1,16 @@
 import React, { useState } from "react";
 import { getSalesResponse, getFinalLeadCommand } from "../utils/gemini";
+import SubmissionResult from "./SubmissionResult";
 
 function ChatBot() {
   const [messages, setMessages] = useState([
-    { sender: "Sales", text: "Hi! Are you the owner of the business?" },
+    { sender: "Sales", text: "Hi! How are you today? Can I get Your Name?" },
   ]);
   const [input, setInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitted, setSubmitted] = useState(false); // ✅ New state for thank-you form
+  const [submitted, setSubmitted] = useState(false);
+  const [leadResult, setLeadResult] = useState(null);
+  const [commandType, setCommandType] = useState("");
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -32,17 +35,25 @@ function ChatBot() {
         .join("\n");
 
       const finalCommand = await getFinalLeadCommand(conversationText);
+      const URI =
+        import.meta.env.VITE_AIAGENT_URI || "http://localhost:5000/ask";
 
-      const response = await fetch("http://localhost:5000/ask", {
+      const token = localStorage.getItem("token");
+      const response = await fetch(URI, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ query: finalCommand }),
       });
 
       if (!response.ok) throw new Error(`Error: ${response.statusText}`);
-      await response.json();
+      const result = await response.json();
+      setCommandType(result.command || finalCommand.command);
+      setLeadResult(result.data || result);
 
-      setSubmitted(true); // ✅ Show thank-you screen
+      setSubmitted(true);
     } catch (err) {
       alert("Submission failed: " + err.message);
     }
@@ -51,13 +62,30 @@ function ChatBot() {
 
   if (submitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-black text-white">
-        <div className="bg-gray-900 p-8 rounded shadow-lg text-center">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-black text-white">
+        <div className="bg-gray-900 p-8 rounded shadow-lg text-center max-w-lg w-full">
           <h2 className="text-3xl font-bold mb-4">🎉 Thank You!</h2>
-          <p className="text-lg">We've received your information.</p>
-          <p className="text-sm mt-2 text-gray-400">
+          <p className="text-lg mb-4">We've received your information.</p>
+          <p className="text-sm mb-6 text-gray-400">
             Our sales team will contact you shortly.
           </p>
+          <SubmissionResult lead={leadResult} command={commandType} />
+          <button
+            onClick={() => {
+              setSubmitted(false);
+              setLeadResult(null);
+              setCommandType("");
+              setMessages([
+                {
+                  sender: "Sales",
+                  text: "Hi! Are you the owner of the business?",
+                },
+              ]);
+            }}
+            className="mt-6 bg-white text-black px-4 py-2 rounded hover:bg-gray-300"
+          >
+            Restart Chat
+          </button>
         </div>
       </div>
     );

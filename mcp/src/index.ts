@@ -1,15 +1,16 @@
 import express, { Request, Response } from 'express';
 import dotenv from 'dotenv';
 import { handleCommand } from './commands/handler';
-const verifyToken = require('./middleware/verifyToken'); 
+import verifyToken from './middleware/verifyToken';
 
 dotenv.config();
 const app = express();
 app.use(express.json());
 
-app.post('/execute', async (req: Request, res: Response) => {
+app.post('/execute', verifyToken, async (req: Request, res: Response) => {
     try {
-        const response = await handleCommand(req.body);
+        const token = req.headers.authorization!; // Grab the Bearer token
+        const response = await handleCommand(req.body, token);
         res.json(response.data);
     } catch (err: any) {
         console.error('Error:', err);

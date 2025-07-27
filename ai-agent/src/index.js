@@ -3,20 +3,21 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const { parseQueryToCommand } = require("./parser");
 const { sendToMCP } = require("./mcpClient");
-const verifyToken = require("./middleware/verifyToken"); // ✅ Import middleware
+const verifyToken = require("./middleware/verifyToken"); 
 
 dotenv.config();
 const app = express();
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: process.env.FRONTEND_ORIGIN || "http://localhost:5173",
     credentials: true,
   })
 );
 app.use(express.json());
 
-app.post("/ask",  async (req, res) => {
+
+app.post("/ask", verifyToken, async (req, res) => {
   try {
     const { query } = req.body;
     if (!query) {
@@ -26,8 +27,9 @@ app.post("/ask",  async (req, res) => {
     const commandObj = await parseQueryToCommand(query);
     console.log("Parsed commandObj:", commandObj);
 
-    const result = await sendToMCP(commandObj);
-    console.log(result);
+    const token = req.headers.authorization; // forward token
+
+    const result = await sendToMCP(commandObj, token);
     res.json(result);
   } catch (err) {
     console.error("AI Agent Error:", err.message);
@@ -37,7 +39,7 @@ app.post("/ask",  async (req, res) => {
   }
 });
 
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () =>
-  console.log(`✅ AI Agent running on http://localhost:${PORT}`)
+  console.log(`AI Agent running on http://localhost:${PORT}`)
 );

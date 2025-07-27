@@ -1,4 +1,3 @@
-// parser.js
 const axios = require("axios");
 require("dotenv").config();
 
@@ -6,11 +5,7 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const GEMINI_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
-/**
- * Converts a raw conversation into a structured command object using Gemini.
- * @param {string} query - The raw conversation text
- * @returns {Promise<Object>} - A command object { command: string, data: object }
- */
+
 async function parseQueryToCommand(query) {
   const prompt = `
 You're an AI CRM agent. Extract structured data from the conversation below and return a JSON payload with one of these commands: "createLead", "updateLead", or "deleteLead".

@@ -10,7 +10,7 @@ import {
 
 const router = express.Router();
 
-// router.use(authenticate);
+router.use(authenticate);
 
 router.post('/', createLead);
 router.get('/', getLeads);

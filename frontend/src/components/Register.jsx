@@ -12,7 +12,8 @@ const Register = () => {
     e.preventDefault();
     setError("");
     try {
-      const res = await axios.post("http://localhost:3000/auth/register", {
+      const backendUri = import.meta.env.VITE_BACKEND_URI;
+      const res = await axios.post(`${backendUri}/auth/register`, {
         email,
         password,
       });

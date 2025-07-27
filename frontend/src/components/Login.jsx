@@ -12,22 +12,26 @@ function Login() {
     e.preventDefault();
     setError("");
     try {
-      const res = await axios.post("http://localhost:3000/auth/login", {
+      const backendUri = import.meta.env.VITE_BACKEND_URI;
+      const res = await axios.post(`${backendUri}/auth/login`, {
         email,
         password,
       });
 
       localStorage.setItem("token", res.data.token);
+
       navigate("/chat");
     } catch (err) {
-      setError("Login failed. Please check your credentials." + err);
+      setError("Login failed. Please check your credentials.");
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-black">
       <div className="bg-white shadow-xl rounded-xl p-8 w-full max-w-md">
-        <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
+        <h2 className="text-2xl font-bold mb-6 text-center text-black">
+          Login
+        </h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="email"
@@ -57,7 +61,7 @@ function Login() {
           <p className="text-red-500 mt-4 text-center text-sm">{error}</p>
         )}
 
-        <p className="mt-6 text-center text-sm">
+        <p className="mt-6 text-center text-sm text-black">
           Don’t have an account?{" "}
           <button
             onClick={() => navigate("/register")}

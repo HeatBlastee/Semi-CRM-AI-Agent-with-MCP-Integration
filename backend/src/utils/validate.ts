@@ -8,6 +8,6 @@ export const leadSchema = z.object({
         phone: z.string().optional()
     }).optional(),
     interestedProducts: z.array(z.string()).optional().default([]),
-    status: z.string().optional(),
+    status: z.string().optional().default('new'),
     notes: z.string().optional(),
 });
