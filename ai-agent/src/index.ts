@@ -1,9 +1,9 @@
-const express = require("express");
-const dotenv = require("dotenv");
-const cors = require("cors");
-const { parseQueryToCommand } = require("./parser");
-const { sendToMCP } = require("./mcpClient");
-const verifyToken = require("./middleware/verifyToken"); 
+import express, { Request, Response } from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import { parseQueryToCommand } from "./parser";
+import { sendToMCP } from "./mcpClient";
+import verifyToken from "./middleware/verifyToken";
 
 dotenv.config();
 const app = express();
@@ -16,8 +16,7 @@ app.use(
 );
 app.use(express.json());
 
-
-app.post("/ask", verifyToken, async (req, res) => {
+app.post("/ask", verifyToken, async (req: Request, res: Response) => {
   try {
     const { query } = req.body;
     if (!query) {
@@ -27,15 +26,16 @@ app.post("/ask", verifyToken, async (req, res) => {
     const commandObj = await parseQueryToCommand(query);
     console.log("Parsed commandObj:", commandObj);
 
-    const token = req.headers.authorization; // forward token
-
+    const token = req.headers.authorization || ""; // forward token
     const result = await sendToMCP(commandObj, token);
+
     res.json(result);
   } catch (err) {
-    console.error("AI Agent Error:", err.message);
-    res
-      .status(500)
-      .json({ error: "Failed to process query", detail: err.message });
+    console.error("AI Agent Error:", (err as Error).message);
+    res.status(500).json({
+      error: "Failed to process query",
+      detail: (err as Error).message,
+    });
   }
 });
 

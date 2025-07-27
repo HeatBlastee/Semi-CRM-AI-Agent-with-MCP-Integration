@@ -1,12 +1,34 @@
-const axios = require("axios");
-require("dotenv").config();
+import axios from "axios";
+import dotenv from "dotenv";
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+dotenv.config();
+
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY!;
 const GEMINI_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent";
 
+interface ContactInfo {
+  email?: string;
+  phone?: string;
+}
 
-async function parseQueryToCommand(query) {
+interface LeadData {
+  name: string;
+  source: string;
+  contact?: ContactInfo;
+  interestedProducts: string[];
+  notes: string;
+  id?: string; // used for update/delete
+}
+
+type CommandType = "createLead" | "updateLead" | "deleteLead";
+
+interface ParsedCommand {
+  command: CommandType;
+  data: LeadData;
+}
+
+export async function parseQueryToCommand(query: string): Promise<ParsedCommand> {
   const prompt = `
 You're an AI CRM agent. Extract structured data from the conversation below and return a JSON payload with one of these commands: "createLead", "updateLead", or "deleteLead".
 
@@ -67,15 +89,15 @@ JSON:
   }
 
   try {
-    const parsed = JSON.parse(text);
+    const parsed: ParsedCommand = JSON.parse(text);
 
-    // Normalize leadId → id
+    // Normalize leadId to id if present
     if (
       (parsed.command === "deleteLead" || parsed.command === "updateLead") &&
-      parsed.data?.leadId
+      (parsed.data as any).leadId
     ) {
-      parsed.data.id = parsed.data.leadId;
-      delete parsed.data.leadId;
+      parsed.data.id = (parsed.data as any).leadId;
+      delete (parsed.data as any).leadId;
     }
 
     return parsed;
@@ -84,5 +106,3 @@ JSON:
     throw new Error("Gemini response was not valid JSON");
   }
 }
-
-module.exports = { parseQueryToCommand };
